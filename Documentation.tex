@@ -1,0 +1,57 @@
+\documentclass[11pt]{article}
+\usepackage{fullpage}
+\title{Tic-Tac-Toe! Game}
+\author{ By Group11}
+\begin{document}
+\maketitle
+\section{Approach:}
+\begin{itemize}
+  \item We used YOLO model to our task as required, By which it depends on a dataset of labels that the model can train on it to detect the hand gesture required in the task
+  
+ \item As for the game implementation, it was decided to use Python's most popular games library called Pygame, the library will be used as a form of GUI while the game itself is being played through a data structure called list, basically Pygame will use the list as reference
+
+\end{itemize}
+\section{Methodology:}
+\subsection{Game implementation}
+\subsubsection{Game initialization}
+
+The program starts off with a couple of global variables, each of which can be configured to change the GUI's design, for example the SQUARESIZE is used to configure the size of each square in the Tic-Tac-Toe grid.
+
+
+Afterwards we initialize the Pygame screen with the configured parameters, create a variable that let the program know which player's turn is it, and create a board list that will hold all the information of the game's board, which will be later on used to draw the game
+
+\subsubsection{Drawing board}
+At the start of each move, the program will take the board list and use it as a reference to draw the game, each drawing will start off with turning the screen white then draw a 3x3 grid using horizontal and vertical lines.
+
+The program then loops through the board seeking for the letters x and o, once found the program will take the index of the letter, multiply the index by the already established square size and add in half the size of the square, through that we get the center of the square grid.
+
+Through the center we can easily draw the o using the pygame circle function, while the x needs to be a bit more precise by finding the coordinates of the starting and finishing point of 2 lines, by getting the coordinates of the left or right upper or bottom corner of the square grid then add or subtract in a quarter of the square size.
+
+After drawing the board the program then adds in text to guide the player on what should they do
+
+\subsubsection{Game's loop}
+At every loop, Pygame attempts to seek if the player pressed a mouse button or not, once it detects a button Pygame seeks the exact pixel coordinates of the button, then the program divides the pixel coordinates by the square size to get the exact index of the square grid inside of the board.
+
+If the value got a letter then the program resets the loop, however if there is nothing in the index's value then the program attempts to detect which letter is the player using through the YOLO model and then insert the letter into the empty value.
+
+Once the move is done the program checks if any player won by looping through the board checking if there is a row or column or diagonal that's equal to each other, or if all the values are taken and there is no more space left, once found the program let the players know who won by drawing a line passing through the winning letters and inserting text letting which player won, ending the game.
+
+If no player won then the program reloops until its either
+
+
+\begin{itemize}
+  \item 
+  \item 
+\end{itemize}
+\section{Results:}
+\begin{itemize}
+  \item 
+  \item 
+\end{itemize}
+\section{Challenges:}
+\begin{itemize}
+  \item The first challenge we faced was to collect the largest amount of photos to our dataset, which the model needed much data to be trained well
+  \item the model needed to be more generalized, as we didn't want it for a personal use, so we varied in photos angles, brightness, and background 
+
+\end{itemize}
+\end{document}
