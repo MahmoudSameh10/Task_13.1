@@ -86,11 +86,10 @@ def detect_gesture_and_play(board,text_surface):
 
             center_x = (x_min + x_max) / 2
             center_y = (y_min+100 + y_max) / 2
-            print(center_y)
+
 
             grid_x = int(center_x / 200)
             grid_y =int(center_y/ 200)
-            print(grid_y)
             if grid_x >2:
                 grid_x = 2
             if grid_y >2:
@@ -166,6 +165,8 @@ while running:
         if gameOver(board):
             pygame.display.flip()
             while True:
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    exit()
                 continue
     ret, frame = cap.read()
     cv2.imshow('Webcam', frame)
