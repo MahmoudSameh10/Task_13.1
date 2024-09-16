@@ -1,5 +1,7 @@
 import pygame
-
+from ultralytics import YOLO
+import cv2
+import math
 SQUARE_SIZE=200
 
 SCREEN_WIDTH ,SCREEN_HEIGHT= 600,600
@@ -11,6 +13,8 @@ WHITE = (255,255,255)
 xplayer = 1
 
 oplayer=0
+
+model = YOLO('best.pt')
 
 def draw_board(window,board,text_surface):
     screen.fill((255,255,255))
@@ -33,6 +37,8 @@ def draw_board(window,board,text_surface):
                 drawX(window,(col,row))
             elif board[row][col] =="o":
                 drawO(window,(col,row))
+    if text_surface == None:
+        return
     text_rect = text_surface.get_rect()
     text_rect.center=(300,300)
     screen.blit(text_surface,text_rect)
@@ -57,13 +63,48 @@ def drawO(window,pos):
     center_coordinates= ((pos[0]+1)*SQUARE_SIZE -SQUARE_SIZE/2,(pos[1]+1)*SQUARE_SIZE-SQUARE_SIZE/2)
     pygame.draw.circle(window,(0,0,0),center_coordinates,SQUARE_SIZE/3,10)
 
-def play(board,current_player,pos):
-    #TODO: detection of which figure it is
+def detect_gesture_and_play(board,text_surface):
+    ret, frame = cap.read()
+    if not ret:
+        return
 
-    if current_player:
-        board[pos[1]][pos[0]] = "x"
-    else :
-        board[pos[1]][pos[0]] = "o"
+    results = model(frame)
+
+    for r in results:
+        for box in r.boxes:
+            cls = int(box.cls.item())
+            x_min, y_min, x_max, y_max =  box.xyxy.tolist()[0]
+
+            x_min, y_min, x_max, y_max = map(int, [x_min, y_min, x_max, y_max])
+            if cls == 0:  
+                gesture = "x"
+            elif cls == 1:  
+                gesture = "o"
+            else:
+                continue
+
+
+            center_x = (x_min + x_max) / 2
+            center_y = (y_min+100 + y_max) / 2
+            print(center_y)
+
+            grid_x = int(center_x / 200)
+            grid_y =int(center_y/ 200)
+            print(grid_y)
+            if grid_x >2:
+                grid_x = 2
+            if grid_y >2:
+                grid_y = 2
+
+
+            if board[grid_y][grid_x] is None:
+                text_surface = font.render(f'player ' + gesture + ' made a move', True, (0, 0, 0))
+                board[grid_y][grid_x] = gesture
+                draw_board(screen,board,text_surface)
+                pygame.display.flip()
+                return True  # Move was made, return True to toggle the player
+    return False  # No move was made
+
 
 def gameOver(board):
     for row in range(3): #check horizental
@@ -104,39 +145,35 @@ font = pygame.font.SysFont('Courier New', 30)
 screen.fill((255,255,255))
 
 text_surface = None
-currrent_player=xplayer
 
 running = True
-switch = 0
+
 board = activate_board(screen) #where the board is created without a gui
 
-player = "x" if currrent_player else "o"
-
-text_surface = font.render(f'Make a move player '+player, True, (0,0,0))
 draw_board(screen,board,text_surface)
 pygame.display.flip()
+
+cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 600)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)
+ret, frame = cap.read()
+cv2.imshow('Webcam', frame)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            x, y = pygame.mouse.get_pos()
-            y = int(y / SQUARE_SIZE)
-            x = int(x / SQUARE_SIZE)
+    if detect_gesture_and_play(board,text_surface):
+        if gameOver(board):
+            pygame.display.flip()
+            while True:
+                continue
+    ret, frame = cap.read()
+    cv2.imshow('Webcam', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-            if board[y][x]==None: #if play is possible
-                play(board,currrent_player,(x,y))
-                currrent_player = 1 if currrent_player == 0 else 0
-
-                #check if the game is over
-                if gameOver(board):
-                    pygame.display.flip()
-                    while True:
-                        continue
-                player = "x" if currrent_player else "o"
-
-                text_surface = font.render(f'Make a move player '+player, True, (0,0,0))
-                draw_board(screen,board,text_surface)
-                pygame.display.flip()
+cap.release()
+cv2.destroyAllWindows()
+pygame.quit()
 
 
